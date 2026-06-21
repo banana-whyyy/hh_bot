@@ -21,3 +21,4 @@ htmlcov/
 *.sqlite3
 .DS_Store
 Thumbs.db
+user_data/
