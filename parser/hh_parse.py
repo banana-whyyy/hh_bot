@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("HH-Parser")
 
-async def parse(search_text: str = "FastAPI"):
+async def parse(search_text: str):
     url = f"https://hh.ru/search/vacancy?text={search_text}&per_page=20&order_by=publication_time"
     
     parsed_data = []
@@ -95,4 +95,23 @@ async def parse(search_text: str = "FastAPI"):
     return parsed_data
 
 if __name__ == "__main__":
-    asyncio.run(parse())
+    from database.database import async_session_maker 
+    from database.crud import get_parsed_vacancy      
+
+    async def test_pipeline():
+        search_keyword = "FastAPI"
+        logger.info(f"--- ШАГ 1: Запуск парсера по ключу {search_keyword} ---")
+        
+        raw_vacancies = await parse(search_text=search_keyword)
+        
+        if not raw_vacancies:
+            logger.warning("Парсер вернул пустой список. Тест БД отменен.")
+            return
+
+        logger.info(f"--- ШАГ 2: Сохранение в базу данных (Всего найдено: {len(raw_vacancies)}) ---")
+        
+        async with async_session_maker() as session:
+            inserted_count = await get_parsed_vacancy(session, raw_vacancies)
+            logger.info(f"Успешно добавлено НОВЫХ вакансий в БД: {inserted_count}")
+
+    asyncio.run(test_pipeline())
