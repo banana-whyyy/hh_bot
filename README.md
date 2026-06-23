@@ -38,8 +38,10 @@
 │   ├── database.py       # Настройка engine и сессий
 │   ├── models.py         # Описание таблиц SQLAlchemy
 │   └── crud.py           # Функции вставки/выбора данных (DAO слой)
+│
 ├── parser/               # Модуль парсера
 │   └── hh_parser.py      # Твой скрипт парсинга на Playwright + BS4
+│
 ├── bot/                  # Модуль Telegram-бота (aiogram)
 │   ├── handlers/         # Обработчики команд и кнопок
 │   │   ├── commands.py   # Команды /start, /help
@@ -47,6 +49,7 @@
 │   ├── keybords/         # Inline и Reply клавиатуры
 │   │   └── inline.py     # Кнопки "Откликнуться", "Следующая"
 │   └── utils/            # Вспомогательные функции бота
+│
 ├── migrations/           # Папка миграций Alembic (создается автоматически)
 │   └── versions/         # Сами файлы миграций
 └── user_data/            # Профиль Chromium для обхода капчи (в фоновом режиме)
