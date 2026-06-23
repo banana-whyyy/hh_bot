@@ -34,13 +34,8 @@
 │
 ├── user_data/            # Профиль Chromium для обхода капчи (в фоновом режиме)
 ├── main.py               # Главная точка входа. Запускает aiogram-бота и APScheduler
-├── .env                  # Секреты (DATABASE_URL, BOT_TOKEN и др.) — В .gitignore!
-├── .gitignore            # Игнорируемые файлы (venv, .env, user_data/)
-├── README.md             # Описание проекта и инструкция по запуску
-├── requirements.txt      # Зависимости проекта
-├── alembic.ini           # Конфигурация Alembic
 ├── database/             # Модуль для работы с БД
-│   ├── connection.py     # Бывший database.py (настройка engine и сессий)
+│   ├── database.py       # Настройка engine и сессий
 │   ├── models.py         # Описание таблиц SQLAlchemy
 │   └── crud.py           # Функции вставки/выбора данных (DAO слой)
 ├── parser/               # Модуль парсера
