@@ -28,6 +28,35 @@
 - **Миграции БД:** `Alembic`
 - **Планировщик задач:** `APScheduler` / `Rocketry`
 
+
+## Структура проекта
+```VacancyBot/
+│
+├── user_data/            # Профиль Chromium для обхода капчи (в фоновом режиме)
+├── main.py               # Главная точка входа. Запускает aiogram-бота и APScheduler
+├── .env                  # Секреты (DATABASE_URL, BOT_TOKEN и др.) — В .gitignore!
+├── .gitignore            # Игнорируемые файлы (venv, .env, user_data/)
+├── README.md             # Описание проекта и инструкция по запуску
+├── requirements.txt      # Зависимости проекта
+├── alembic.ini           # Конфигурация Alembic
+├── database/             # Модуль для работы с БД
+│   ├── connection.py     # Бывший database.py (настройка engine и сессий)
+│   ├── models.py         # Описание таблиц SQLAlchemy
+│   └── crud.py           # Функции вставки/выбора данных (DAO слой)
+├── parser/               # Модуль парсера
+│   └── hh_parser.py      # Твой скрипт парсинга на Playwright + BS4
+├── bot/                  # Модуль Telegram-бота (aiogram)
+│   ├── handlers/         # Обработчики команд и кнопок
+│   │   ├── commands.py   # Команды /start, /help
+│   │   └── vacancies.py  # Обработка инлайн-кнопок отклика/пропуска
+│   ├── keybords/         # Inline и Reply клавиатуры
+│   │   └── inline.py     # Кнопки "Откликнуться", "Следующая"
+│   └── utils/            # Вспомогательные функции бота
+├── migrations/           # Папка миграций Alembic (создается автоматически)
+│   └── versions/         # Сами файлы миграций
+└── user_data/            # Профиль Chromium для обхода капчи (в фоновом режиме)
+```
+
 ## Архитектура проекта
 
 Проект разделен на слабосвязанные модули (Loose Coupling), что обеспечивает отказоустойчивость:
