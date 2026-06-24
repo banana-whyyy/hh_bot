@@ -29,3 +29,4 @@ class User(Base):
         DateTime, 
         server_default=text("TIMEZONE('utc', now())")
     )
+    search_keyword: Mapped[str] = mapped_column(String(100), default="FastAPI")
