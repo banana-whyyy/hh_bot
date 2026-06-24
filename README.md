@@ -32,19 +32,19 @@
 ## Структура проекта
 ```VacancyBot/
 │
-├── user_data/            # Профиль Chromium для обхода капчи (в фоновом режиме)
 ├── main.py               # Главная точка входа. Запускает aiogram-бота и APScheduler
 ├── database/             # Модуль для работы с БД
 │   ├── database.py       # Настройка engine и сессий
 │   ├── models.py         # Описание таблиц SQLAlchemy
-│   └── crud.py           # Функции вставки/выбора данных (DAO слой)
+│   └── crud.py           # Функции вставки/выбора данных
 │
 ├── parser/               # Модуль парсера
-│   └── hh_parser.py      # Твой скрипт парсинга на Playwright + BS4
+│   └── hh_parser.py      # Скрипт парсера на Playwright + BS4
 │
 ├── bot/                  # Модуль Telegram-бота (aiogram)
 │   ├── handlers/         # Обработчики команд и кнопок
 │   │   ├── commands.py   # Команды /start, /help
+│   │   ├── echo.py       # Обработчик неразборчивых фраз
 │   │   └── vacancies.py  # Обработка инлайн-кнопок отклика/пропуска
 │   ├── keybords/         # Inline и Reply клавиатуры
 │   │   └── inline.py     # Кнопки "Откликнуться", "Следующая"
@@ -52,6 +52,7 @@
 │
 ├── migrations/           # Папка миграций Alembic (создается автоматически)
 │   └── versions/         # Сами файлы миграций
+│
 └── user_data/            # Профиль Chromium для обхода капчи (в фоновом режиме)
 ```
 

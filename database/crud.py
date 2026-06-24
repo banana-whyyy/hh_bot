@@ -49,5 +49,5 @@ async def mark_vacancy_as_sent(db: AsyncSession, vacancy_id: str):
 
 
 async def update_user_keyword(db: AsyncSession, tg_id: int, keyword: str):
-    await db.execute(update(User).where(User.id == tg_id).values(keyword=keyword))
+    await db.execute(update(User).where(User.id == tg_id).values(search_keyword=keyword))
     await db.commit()
