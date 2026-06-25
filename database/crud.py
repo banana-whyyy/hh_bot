@@ -51,3 +51,13 @@ async def mark_vacancy_as_sent(db: AsyncSession, vacancy_id: str):
 async def update_user_keyword(db: AsyncSession, tg_id: int, keyword: str):
     await db.execute(update(User).where(User.id == tg_id).values(search_keyword=keyword))
     await db.commit()
+
+
+async def get_user(db: AsyncSession, tg_id: int) -> User | None:
+    return await db.get(User, tg_id)
+
+
+async def update_user_cover_template(db: AsyncSession, tg_id: int, text: str):
+    stmt = update(User).where(User.id == tg_id).values(cover_letter_template=text)
+    await db.execute(stmt)
+    await db.commit()
