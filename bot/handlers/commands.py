@@ -5,13 +5,14 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
 from database.database import async_session_maker
-from database.crud import register_user, update_user_keyword
+from database.crud import register_user, update_user_keyword, get_user, update_user_cover_template
 
 router = Router(name="commands")
 
 
 class SetupSearch(StatesGroup):
     waiting_for_keyword = State()
+    waiting_for_cover = State()
 
 @router.message(CommandStart())
 async def cmd_start(message: Message) -> None:
@@ -36,6 +37,8 @@ async def cmd_help(message: Message) -> None:
         "🚀 /start — Запустить бота и зарегистрироваться\n"
         "🎯 /set_keyword — Изменить ключевое слово для поиска\n"
         "❓ /help — Показать это сообщение\n"
+        "👤 /profile - Перейти в профиль\n"
+        "⚡️ /set_cover - Изменить шаблон сопроводительного письма\n"
     )
     await message.answer(help_text, parse_mode="HTML")
 
@@ -52,7 +55,7 @@ async def cmd_set_keyword(message: Message, state: FSMContext) -> None:
 
 
 @router.message(SetupSearch.waiting_for_keyword)
-async def proccess_keyword(message: Message, state: FSMContext) -> None:
+async def process_keyword(message: Message, state: FSMContext) -> None:
     user_keyword = message.text.strip()
 
     if len(user_keyword) < 2:
@@ -68,4 +71,36 @@ async def proccess_keyword(message: Message, state: FSMContext) -> None:
         parse_mode="HTML"
     )
 
+    await state.clear()
+
+
+@router.message(Command("profile"))
+async def cmd_profile(message: Message) -> None:
+    async with async_session_maker() as session:
+        user = await get_user(session, message.from_user.id)
+    
+    text = (
+        f"👤 <b>Твой профиль:</b>\n\n"
+        f"🎯 Поиск по запросу: <code>{user.search_keyword}</code>\n"
+        f"📝 <b>Шаблон сопроводительного:</b>\n<i>{user.cover_letter_template}</i>\n\n"
+        f"⚙️ Изменить запрос: /set_keyword\n"
+        f"✍️ Изменить шаблон письма: /set_cover"
+    )
+    await message.answer(text, parse_mode="HTML")
+
+
+@router.message(Command("set_cover"))
+async def cmd_set_cover(message: Message, state: FSMContext) -> None:
+    await message.answer("Отправь мне новый текст базового сопроводительного письма (до 2000 символов):")
+    await state.set_state(SetupSearch.waiting_for_cover)
+
+
+@router.message(SetupSearch.waiting_for_cover)
+async def process_cover(message: Message, state: FSMContext) -> None:
+    new_cover = message.text.strip()
+
+    async with async_session_maker() as session:
+        await update_user_cover_template(session, message.from_user.id, new_cover)
+    
+    await message.answer("✅ Базовый шаблон сопроводительного письма успешно обновлен!")
     await state.clear()
