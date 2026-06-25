@@ -30,3 +30,7 @@ class User(Base):
         server_default=text("TIMEZONE('utc', now())")
     )
     search_keyword: Mapped[str] = mapped_column(String(100), default="FastAPI")
+    cover_letter_template: Mapped[str | None] = mapped_column(
+        String(2000),
+        default="Здравствуйте! Меня очень заинтересовала ваша вакансия. Мой стек..."
+    )
