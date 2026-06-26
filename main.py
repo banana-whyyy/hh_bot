@@ -5,9 +5,12 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from bot.handlers import get_routers
+from database.database import engine
+from database.models import Base
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from bot.utils.scheduler_tasks import check_and_sent
+from bot.utils.auto_parser import run_auto_parser
 
 logging.basicConfig(
     level=logging.INFO,
@@ -15,6 +18,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger("VacancyBot.Main")
 
+async def on_startup(bot: Bot):
+    logging.info("Синхронизация структуры БД...")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logging.info("База данных успешно подготовлена!")
 
 async def main():
     load_dotenv()
@@ -25,13 +33,20 @@ async def main():
     dp = Dispatcher()
     bot = Bot(token=token)
     dp.include_routers(*get_routers())
+    dp.startup.register(on_startup)
 
     scheduler = AsyncIOScheduler(timezone="UTC")
 
     scheduler.add_job(
+        run_auto_parser,
+        trigger="interval",
+        minutes=1
+    )
+
+    scheduler.add_job(
         check_and_sent,
         trigger="interval",
-        seconds=1800,
+        minutes=1,
         kwargs={"bot": bot}
     )
 
