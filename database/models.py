@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, BigInteger, String, Boolean, DateTime, text
+from sqlalchemy import BigInteger, String, Boolean, DateTime, text, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from datetime import date, datetime
@@ -13,9 +13,8 @@ class Vacancy(Base):
     company: Mapped[str] = mapped_column(String(255))
     url: Mapped[str] = mapped_column(String(512))
 
-    salary: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    experience: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    salary: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    experience: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     is_sent: Mapped[bool] = mapped_column(Boolean, default=False)
     is_applied: Mapped[bool] = mapped_column(Boolean, default=False)
