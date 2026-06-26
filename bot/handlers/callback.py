@@ -1,9 +1,11 @@
 from aiogram import F, Router
 from bot.keyboards.inline import VacancyResponse
 from aiogram.types import CallbackQuery
+import os
 
 from database.database import async_session_maker
 from database.crud import get_user
+from parser.responder import apply_to_vacancy
 
 from aiogram.types import Message
 from aiogram.fsm.state import StatesGroup, State
@@ -11,6 +13,7 @@ from aiogram.fsm.context import FSMContext
 
 router = Router()
 
+USER_DATA_DIR = os.path.join(os.getcwd(), "user_data")
 
 class ApplyProcess(StatesGroup):
     waiting_for_custom_cover = State()
@@ -19,12 +22,28 @@ class ApplyProcess(StatesGroup):
 @router.callback_query(VacancyResponse.filter(F.action == "apply"))
 async def handle_apply(callback: CallbackQuery, callback_data: VacancyResponse):
     vacancy_id = callback_data.vacancy_id
-    # TODO вызов функции из crud на пометку вакансии в БД
-    # await mark_vacancy_as_sent()
-
-    await callback.answer("Ответ принят")
+    await callback.answer("Запускаю отклик на HH...")
     await callback.message.edit_text(
-        text=callback.message.text + "\n\n🟢 <b>Вы откликнулись на эту вакансию!</b>",
+        text=callback.message.text + "\n\n⏳ <i>Отправка отклика, подождите...</i>",
+        parse_mode="HTML"
+    )
+
+    result = await apply_to_vacancy(USER_DATA_DIR, vacancy_id, cover_letter=None)
+
+    if result == "success":
+        # TODO: вызов на пометку вакансии в БД
+        # await mark_vacancy_as_sent(session, vacancy_id)
+        status_text = "\n\n🟢 <b>Вы успешно откликнулись на эту вакансию!</b>"
+    elif result == "already_applied":
+        status_text = "\n\n🟡 <b>Вы уже откликались на эту вакансию ранее!</b>"
+    elif result == "phone_only":
+        status_text = "\n\n⚠️ <b>Отклик не отправлен: работодатель принимает только звонки.</b>"
+    else:
+        status_text = "\n\n🔴 <b>Не удалось откликнуться автоматически (возможна капча). Проверь браузер.</b>"
+
+    base_text = callback.message.text.split("\n\n⏳")[0]
+    await callback.message.edit_text(
+        text=base_text + status_text,
         parse_mode="HTML"
     )
 
@@ -55,14 +74,24 @@ async def process_custom_cover(message: Message, state: FSMContext):
     vacancy_id = user_data.get("current_vacancy_id")
     final_cover_text = message.text.strip()
 
-    # TODO: Передаем парсеру команду откликнуться на vacancy_id с текстом final_cover_text
-    # await hh_parser.apply_to_vacancy(vacancy_id, final_cover_text)
-
-    await message.answer(
-        f"🚀 <b>Отклик отправлен!</b>\n\n"
-        f"Сопроводительное письмо для этой вакансии:\n<i>{final_cover_text}</i>", 
+    status_msg = await message.answer(
+        f"⏳ <b>Отправляю сопроводительное письмо на HH для вакансии {vacancy_id}...</b>",
         parse_mode="HTML"
     )
+
+    result = await apply_to_vacancy(USER_DATA_DIR, vacancy_id, cover_letter=final_cover_text)
+
+    if result == "success":
+        await status_msg.edit_text(
+            f"🚀 <b>Отклик успешно отправлен!</b>\n\n"
+            f"Письмо:\n<i>{final_cover_text}</i>", 
+            parse_mode="HTML"
+        )
+    elif result == "already_applied":
+        await status_msg.edit_text("🟡 <b>Вы уже откликались на эту вакансию ранее. Письмо не продублировано.</b>", parse_mode="HTML")
+    else:
+        await status_msg.edit_text("🔴 <b>Ошибка при отправке сопроводительного. Проверьте логи парсера.</b>", parse_mode="HTML")
+        
     await state.clear()
 
 
