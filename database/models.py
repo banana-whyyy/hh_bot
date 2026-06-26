@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, String, Boolean, DateTime, text, Text
+from sqlalchemy import BigInteger, String, Boolean, DateTime, text, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from datetime import date, datetime
@@ -37,3 +37,10 @@ class User(Base):
         String(2000),
         default="Здравствуйте! Меня очень заинтересовала ваша вакансия. Мой стек..."
     )
+
+
+class user_vacancies(Base):
+    __tablename__ = "user_vacancies"
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    vacancy_id: Mapped[str] = mapped_column(String(50), ForeignKey("vacancies.id", ondelete="CASCADE"), primary_key=True)
+    sent_at: Mapped[datetime] = mapped_column(DateTime, server_default=text("TIMEZONE('utc', now())"))

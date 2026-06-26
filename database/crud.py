@@ -17,6 +17,7 @@ async def get_parsed_vacancy(db: AsyncSession, vacancies_list: list[dict]) -> in
             "url": v["url"],
             "salary": v["salary"],
             "experience": v["experience"],
+            "search_keyword": v["search_keyword"],
         })
     
     stmt = insert(Vacancy).values(formated_data)
