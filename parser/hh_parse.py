@@ -82,14 +82,29 @@ async def parse(search_text: str):
         if employer_tag:
             company = employer_tag.text.strip()
 
+        # Ищем зарплату (на HH она часто выделяется тегом со специальным data-qa)
+        salary_tag = card.find(attrs={"data-qa": "vacancy-serp__vacancy-compensation"}) or card.find(class_=lambda x: x and "compensation" in x.lower())
+        salary = salary_tag.text.strip() if salary_tag else "Не указана"
+
+        # Ищем опыт/формат работы
+        exp_tag = card.find(attrs={"data-qa": "vacancy-serp__vacancy-work-experience"}) or card.find(class_=lambda x: x and "experience" in x.lower())
+        experience = exp_tag.text.strip() if exp_tag else "Не указан"
+
+        # Краткое описание / Обязанности
+        snippet_tag = card.find(attrs={"data-qa": "vacancy-serp__vacancy_snippet_responsibility"}) or card.find(class_=lambda x: x and "snippet" in x.lower())
+        description = snippet_tag.text.strip() if snippet_tag else "Описания нет."
+
         vac_info = {
             "hh_id": hh_id,
             "title": title,
             "company": company,
-            "url": clean_url
+            "url": clean_url,
+            "salary": salary,          
+            "experience": experience,  
+            "description": description 
         }
         parsed_data.append(vac_info)
-        logger.info(f"Найдена вакансия: [{hh_id}] {title} -> {company}")
+        logger.info(f"Найдена вакансия: [{hh_id}] {title} -> {company} | {salary}")
             
     logger.info(f"Скрипт успешно собрал вакансий: {len(parsed_data)}")
     return parsed_data
