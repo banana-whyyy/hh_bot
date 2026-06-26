@@ -13,6 +13,10 @@ class Vacancy(Base):
     company: Mapped[str] = mapped_column(String(255))
     url: Mapped[str] = mapped_column(String(512))
 
+    salary: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    experience: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+
     is_sent: Mapped[bool] = mapped_column(Boolean, default=False)
     is_applied: Mapped[bool] = mapped_column(Boolean, default=False)
     parsed_at: Mapped[datetime] = mapped_column(
