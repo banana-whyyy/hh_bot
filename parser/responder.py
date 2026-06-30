@@ -1,5 +1,6 @@
 import logging
 from playwright.async_api import async_playwright
+import asyncio
 
 logger = logging.getLogger("HH-Responder")
 
@@ -20,6 +21,11 @@ async def apply_to_vacancy(user_data_dir: str, vacancy_id: int, cover_letter: st
 
         try:
             await page.goto(url, wait_until="networkidle", timeout=40000)
+            
+            # ВРЕМЕННЫЙ КОСТЫЛЬ ДЛЯ АВТОРИЗАЦИИ
+            logger.warning("⏸ ПАУЗА: Авторизуйся в браузере, а затем нажми ENTER в консоли...")
+            await asyncio.to_thread(input, "Нажми Enter здесь, когда успешно зайдешь в аккаунт HH...")
+
             await page.wait_for_timeout(2000)
 
             already_applied = await page.query_selector('[data-qa="vacancy-response-link-top-already-applied"]')

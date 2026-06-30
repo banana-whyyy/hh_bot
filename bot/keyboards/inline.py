@@ -6,7 +6,7 @@ from aiogram.filters.callback_data import CallbackData
 # apply - отклик, cover - сопроводительное, skip - пропустить
 class VacancyResponse(CallbackData, prefix="vac"):
     action: str 
-    vacancy_id: int
+    vacancy_id: str
 
 
 def get_vacancy_keyboard(vacancy_id: int) -> InlineKeyboardBuilder:
