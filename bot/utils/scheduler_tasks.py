@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import select, insert
 
 from database.database import async_session_maker
-from database.models import Vacancy, User, user_vacancies
+from database.models import Vacancy, User, UserVacancy
 from bot.keyboards.inline import get_vacancy_keyboard
 
 logger = logging.getLogger("VacancyBot.Scheduler")
@@ -12,27 +12,27 @@ async def check_and_sent(bot: Bot):
     logger.info("⏰ Планировщик: проверка базы данных на новые вакансии...")
 
     async with async_session_maker() as session:
-        user_query = select(User).where(User.is_active == True, User.search_keyword != None)
+        user_query = select(User).where(User.search_keyword != None)
         user_result = await session.execute(user_query)
         users = user_result.scalars().all()
 
         if not users:
-            logger.info("Нет активных пользователей с настроенным поиском.")
+            logger.info("Нет пользователей с настроенным поиском.")
             return
 
         for user in users:
             sent_vacancies_subquery = (
-                select(user_vacancies.c.vacancy_id)
-                .where(user_vacancies.c.user_id == user.id)
+                select(UserVacancy.vacancy_id)
+                .where(UserVacancy.user_id == user.id)
             )
             
             vacancy_query = (
                 select(Vacancy)
                 .where(
-                    Vacancy.search_keyword == user.search_query,
-                    Vacancy.id.not_in(sent_vacancies_subquery)
+                    Vacancy.search_keyword == user.search_keyword,
+                    ~Vacancy.id.in_(sent_vacancies_subquery)
                 )
-                .limit(3)  # Порционно, по 3 штуки за раз на человека
+                .limit(3) 
             )
             
             vacancies_result = await session.execute(vacancy_query)
@@ -41,7 +41,7 @@ async def check_and_sent(bot: Bot):
             if not personal_vacancies:
                 continue  # Для этого юзера новых вакансий пока нет, идем к следующему
 
-            logger.info(f"Найдено {len(personal_vacancies)} новых вакансий для пользователя {user.id} по запросу '{user.search_query}'")
+            logger.info(f"Найдено {len(personal_vacancies)} новых вакансий для пользователя {user.id} по запросу '{user.search_keyword}'")
 
             for vacancy in personal_vacancies:
                 v_title = html.quote(str(vacancy.title))
@@ -65,7 +65,7 @@ async def check_and_sent(bot: Bot):
                         reply_markup=get_vacancy_keyboard(vacancy.id)
                     )
                     
-                    stmt = insert(user_vacancies).values(user_id=user.id, vacancy_id=vacancy.id)
+                    stmt = insert(UserVacancy).values(user_id=user.id, vacancy_id=vacancy.id)
                     await session.execute(stmt)
                     
                 except Exception as e:

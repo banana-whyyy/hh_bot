@@ -15,8 +15,8 @@ class Vacancy(Base):
 
     salary: Mapped[str | None] = mapped_column(String(500), nullable=True)
     experience: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    search_keyword: Mapped[str] = mapped_column(String(100), index=True)
 
-    is_sent: Mapped[bool] = mapped_column(Boolean, default=False)
     is_applied: Mapped[bool] = mapped_column(Boolean, default=False)
     parsed_at: Mapped[datetime] = mapped_column(
         DateTime, 
@@ -39,7 +39,7 @@ class User(Base):
     )
 
 
-class user_vacancies(Base):
+class UserVacancy(Base):
     __tablename__ = "user_vacancies"
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     vacancy_id: Mapped[str] = mapped_column(String(50), ForeignKey("vacancies.id", ondelete="CASCADE"), primary_key=True)
