@@ -40,13 +40,13 @@ async def main():
     scheduler.add_job(
         run_auto_parser,
         trigger="interval",
-        minutes=1
+        minutes=60
     )
 
     scheduler.add_job(
         check_and_sent,
         trigger="interval",
-        minutes=1,
+        minutes=60,
         kwargs={"bot": bot}
     )
 
